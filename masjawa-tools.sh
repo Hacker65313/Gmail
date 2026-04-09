@@ -3,7 +3,7 @@
 #   MasJawa Hacking Tools - Kali Linux / Termux Edition
 #   Author  : Fendipendol
 #   Version : 2.0
-#   Desc    : Simulasi Pembelajaran Tools Gmail
+#   Desc    : Tools Gmail
 # ═══════════════════════════════════════════════════════════════
 
 # ─── COLORS ───────────────────────────────────────────────────
@@ -218,7 +218,7 @@ show_gmail_logo() {
   center "│  Author   :  Fendipendol         │"
   center "│  Version  :  2.0                 │"
   center "│  Platform :  Kali Linux / Termux │"
-  center "│  Type     :  Simulation Learning │"
+  center "│  Type     :  Hacking Learning │"
   center "│  Target   :  Gmail               │"
   center "└─────────────────────────────────┘"
   echo -e "${RESET}"
