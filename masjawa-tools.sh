@@ -144,7 +144,7 @@ show_welcome() {
   echo -e "${RESET}"
 
   divider '─' "$DIM$GREEN"
-  center "[ SIMULATION LEARNING PLATFORM v2.0 ]" "$DIM$GREEN"
+  center "[ HACKING LEARNING PLATFORM v2.0 ]" "$DIM$GREEN"
   divider '─' "$DIM$GREEN"
   echo ""
 
