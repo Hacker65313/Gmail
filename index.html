@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MasJawa Hacking Tools</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    :root {
+      --green: #00ff41;
+      --dark-green: #00b32c;
+      --red: #ff003c;
+      --yellow: #ffd700;
+      --bg: #0a0a0a;
+      --panel: #0d1117;
+      --border: #00ff4133;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCANLINE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ─── MATRIX RAIN CANVAS ─── */
+    #matrix-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.13;
+    }
+
+    /* ─── PAGE SYSTEM ─── */
+    .page {
+      display: none;
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .page.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    /* ─── WELCOME PAGE ─── */
+    #page-welcome {
+      text-align: center;
+    }
+
+    .skull-art {
+      font-size: 11px;
+      line-height: 1.2;
+      color: var(--green);
+      text-shadow: 0 0 8px var(--green);
+      white-space: pre;
+      margin-bottom: 20px;
+      animation: flickerIn 1s ease forwards;
+    }
+
+    .welcome-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(22px, 5vw, 48px);
+      font-weight: 900;
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green), 0 0 40px var(--green), 0 0 80px var(--dark-green);
+      letter-spacing: 4px;
+      animation: glitch 3s infinite;
+      margin-bottom: 10px;
+    }
+
+    .welcome-sub {
+      font-size: 14px;
+      color: #888;
+      letter-spacing: 6px;
+      margin-bottom: 40px;
+      animation: fadeInUp 1s 0.5s ease both;
+    }
+
+    .typing-container {
+      font-size: 13px;
+      color: var(--green);
+      margin-bottom: 30px;
+      min-height: 22px;
+    }
+
+    .progress-bar-wrap {
+      width: 400px;
+      max-width: 90vw;
+      height: 6px;
+      background: #111;
+      border: 1px solid var(--green);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 0 auto 20px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--dark-green), var(--green));
+      box-shadow: 0 0 10px var(--green);
+      transition: width 0.05s linear;
+    }
+
+    .loading-pct {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .btn-enter {
+      display: none;
+      padding: 14px 50px;
+      border: 2px solid var(--green);
+      background: transparent;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 16px;
+      letter-spacing: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .btn-enter::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,65,0.2), transparent);
+      transition: left 0.4s;
+    }
+    .btn-enter:hover::before { left: 100%; }
+    .btn-enter:hover {
+      background: rgba(0,255,65,0.1);
+      box-shadow: 0 0 20px var(--green), inset 0 0 20px rgba(0,255,65,0.05);
+      text-shadow: 0 0 10px var(--green);
+    }
+
+    /* ─── PANEL / CARD ─── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--green);
+      border-radius: 4px;
+      padding: 30px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 0 30px rgba(0,255,65,0.1), inset 0 0 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20px;
+      width: 60px; height: 2px;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green);
+      margin-bottom: 6px;
+      letter-spacing: 2px;
+    }
+    .panel-sub {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 25px;
+      letter-spacing: 2px;
+    }
+
+    /* ─── INPUT ─── */
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-label {
+      font-size: 11px;
+      color: #666;
+      letter-spacing: 2px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .input-field {
+      width: 100%;
+      background: #050505;
+      border: 1px solid #1a3a1a;
+      border-radius: 2px;
+      padding: 12px 16px;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .input-field:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 15px rgba(0,255,65,0.2);
+    }
+    .input-field::placeholder { color: #2a4a2a; }
+
+    .input-status {
+      font-size: 11px;
+      margin-top: 6px;
+      min-height: 16px;
+      letter-spacing: 1px;
+    }
+    .input-status.valid { color: var(--green); }
+    .input-status.invalid { color: var(--red); }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--green);
+      background: transparent;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover {
+      background: rgba(0,255,65,0.08);
+      box-shadow: 0 0 15px rgba(0,255,65,0.3);
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .btn-danger:hover {
+      background: rgba(255,0,60,0.08);
+      box-shadow: 0 0 15px rgba(255,0,60,0.3);
+    }
+
+    .btn-warning {
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+    .btn-warning:hover {
+      background: rgba(255,215,0,0.08);
+      box-shadow: 0 0 15px rgba(255,215,0,0.3);
+    }
+
+    .btn-back {
+      margin-top: 15px;
+      border-color: #444;
+      color: #666;
+      font-size: 12px;
+    }
+    .btn-back:hover {
+      border-color: #888;
+      color: #aaa;
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* ─── MENU LIST ─── */
+    .menu-list {
+      list-style: none;
+      margin-top: 10px;
+    }
+    .menu-item {
+      border: 1px solid #1a2a1a;
+      margin-bottom: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .menu-item::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      width: 3px; height: 100%;
+      background: var(--green);
+      transform: scaleY(0);
+      transition: transform 0.2s;
+    }
+    .menu-item:hover::after { transform: scaleY(1); }
+    .menu-item:hover {
+      background: rgba(0,255,65,0.05);
+      border-color: var(--green);
+      box-shadow: 0 0 10px rgba(0,255,65,0.1);
+      padding-left: 24px;
+    }
+    .menu-item .num {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      color: var(--green);
+      text-shadow: 0 0 8px var(--green);
+      min-width: 30px;
+    }
+    .menu-item .info { flex: 1; }
+    .menu-item .title { font-size: 14px; color: #ccc; letter-spacing: 1px; }
+    .menu-item .desc { font-size: 10px; color: #444; margin-top: 2px; }
+    .menu-item .arrow { color: #333; font-size: 12px; }
+    .menu-item:hover .arrow { color: var(--green); }
+
+    /* ─── LOG / TERMINAL OUTPUT ─── */
+    .log-box {
+      background: #050505;
+      border: 1px solid #1a2a1a;
+      border-radius: 2px;
+      padding: 14px;
+      font-size: 11px;
+      line-height: 1.9;
+      color: #555;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    .log-box .log-line { display: block; }
+    .log-box .log-line.active { color: var(--green); }
+    .log-box .log-line.done { color: var(--dark-green); }
+    .log-box .log-line.error { color: var(--red); }
+    .log-box .log-line.warn { color: var(--yellow); }
+
+    /* ─── CIRCULAR PROGRESS ─── */
+    .circle-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+    .circle-svg { transform: rotate(-90deg); }
+    .circle-bg { fill: none; stroke: #1a1a1a; stroke-width: 8; }
+    .circle-fill {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 502;
+      stroke-dashoffset: 502;
+      filter: drop-shadow(0 0 6px var(--green));
+      transition: stroke-dashoffset 1s linear;
+    }
+    .circle-text {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green);
+      margin-top: -5px;
+    }
+    .circle-label { font-size: 11px; color: #444; margin-top: 4px; letter-spacing: 2px; }
+
+    /* ─── DATA DISPLAY ─── */
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #111;
+      font-size: 12px;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-key { color: #555; letter-spacing: 1px; }
+    .data-val { color: var(--green); }
+    .data-val.red { color: var(--red); }
+    .data-val.yellow { color: var(--yellow); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+    .badge-green { background: rgba(0,255,65,0.1); border: 1px solid var(--green); color: var(--green); }
+    .badge-red { background: rgba(255,0,60,0.1); border: 1px solid var(--red); color: var(--red); }
+    .badge-yellow { background: rgba(255,215,0,0.1); border: 1px solid var(--yellow); color: var(--yellow); }
+
+    /* ─── APK CARDS ─── */
+    .apk-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 15px 0;
+    }
+    .apk-card {
+      background: #080808;
+      border: 1px solid #1a2a1a;
+      border-radius: 4px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .apk-card.connected {
+      border-color: var(--green);
+      box-shadow: 0 0 12px rgba(0,255,65,0.15);
+    }
+    .apk-icon { font-size: 28px; margin-bottom: 8px; }
+    .apk-name { font-size: 12px; color: #aaa; margin-bottom: 6px; }
+    .apk-status { font-size: 10px; }
+
+    /* ─── SERVER OFF ─── */
+    .server-off-wrap {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .server-off-icon {
+      font-size: 52px;
+      margin-bottom: 15px;
+      animation: pulse-red 1.5s infinite;
+    }
+    .server-off-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      color: var(--red);
+      text-shadow: 0 0 15px var(--red);
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    .server-off-sub {
+      font-size: 11px;
+      color: #555;
+      letter-spacing: 2px;
+      line-height: 2;
+    }
+    .contact-box {
+      margin-top: 20px;
+      padding: 14px;
+      background: #0a0505;
+      border: 1px solid #3a1a1a;
+      font-size: 11px;
+      color: #ff4444;
+      letter-spacing: 1px;
+      line-height: 2;
+    }
+
+    /* ─── TARGET BADGE ─── */
+    .target-badge {
+      background: #050a05;
+      border: 1px solid #1a3a1a;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .target-badge span { color: var(--green); }
+    .target-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: blink 1s infinite;
+    }
+
+    /* ─── HEADER BAR ─── */
+    .header-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 40px;
+      background: rgba(10,10,10,0.95);
+      border-bottom: 1px solid #1a2a1a;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .header-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 3px;
+      text-shadow: 0 0 8px var(--green);
+    }
+    .header-status {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #444;
+    }
+    .status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+      animation: blink 1.5s infinite;
+    }
+
+    /* ─── SEPARATOR ─── */
+    .sep {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      margin: 20px 0;
+      opacity: 0.3;
+    }
+
+    /* ─── PAGE TRANSITION ─── */
+    .page-transition {
+      animation: pageIn 0.4s ease forwards;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes glitch {
+      0%, 90%, 100% { transform: none; text-shadow: 0 0 20px var(--green), 0 0 40px var(--green); }
+      91% { transform: translate(-2px, 0) skew(-1deg); text-shadow: 3px 0 var(--red), -3px 0 #00f; }
+      93% { transform: translate(2px, 0) skew(1deg); text-shadow: -3px 0 var(--red), 3px 0 #00f; }
+      95% { transform: translate(-1px, 0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes flickerIn {
+      0% { opacity: 0; }
+      10% { opacity: 0.8; }
+      20% { opacity: 0.2; }
+      30% { opacity: 1; }
+      40% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { text-shadow: 0 0 10px var(--red); }
+      50% { text-shadow: 0 0 30px var(--red), 0 0 60px var(--red); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes scan {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    /* ─── KUNCI ANIMATION ─── */
+    .lock-anim {
+      font-size: 50px;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .lock-anim.locking { animation: pulse-red 0.8s infinite; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #050505; }
+    ::-webkit-scrollbar-thumb { background: #1a3a1a; border-radius: 2px; }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- Matrix Rain -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- Header (hidden on welcome) -->
+<div class="header-bar" id="header-bar" style="display:none">
+  <span class="header-logo">⚡ MASJAWA TOOLS</span>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span>SYSTEM ACTIVE</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1: WELCOME
+══════════════════════════════════════════════ -->
+<div class="page active" id="page-welcome">
+  <div class="skull-art" id="skull-art">
+  ███╗   ███╗ █████╗ ███████╗     ██╗ █████╗ ██╗    ██╗ █████╗ 
+  ████╗ ████║██╔══██╗██╔════╝     ██║██╔══██╗██║    ██║██╔══██╗
+  ██╔████╔██║███████║███████╗     ██║███████║██║ █╗ ██║███████║
+  ██║╚██╔╝██║██╔══██║╚════██║██   ██║██╔══██║██║███╗██║██╔══██║
+  ██║ ╚═╝ ██║██║  ██║███████║╚█████╔╝██║  ██║╚███╔███╔╝██║  ██║
+  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝ ╚════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝
+  </div>
+
+  <div class="welcome-title" id="welcome-title">MASJAWA HACKING TOOLS</div>
+  <div class="welcome-sub">[ SIMULATION LEARNING PLATFORM v2.0 ]</div>
+
+  <div class="typing-container" id="typing-text"></div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="boot-progress"></div>
+  </div>
+  <div class="loading-pct" id="boot-pct">Initializing... 0%</div>
+
+  <button class="btn-enter" id="btn-enter" onclick="goToPage('page-gmail')">
+    [ ENTER SYSTEM ]
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2: GMAIL INPUT
+══════════════════════════════════════════════ -->
+<div class="page" id="page-gmail" style="padding-top:60px">
+  <div class="panel page-transition">
+    <div style="text-align:center; margin-bottom:20px">
+      <div style="font-size:36px; margin-bottom:8px">📧</div>
+      <div class="panel-title">GMAIL TOOLS</div>
+      <div class="panel-sub">[ INPUT TARGET GMAIL ACCOUNT ]</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="input-group">
+      <label class="input-label">▸ TARGET EMAIL ADDRESS</label>
+      <input
+        type="text"
+        class="input-field"
+        id="gmail-input"
+        placeholder="target@gmail.com"
+        oninput="validateGmail(this.value)"
+        onkeydown="if(event.key==='Enter') checkGmail()"
+      />
+      <div class="input-status" id="gmail-status"></div>
+    </div>
+
+    <button class="btn" id="btn-check-gmail" onclick="checkGmail()" disabled>
+      ⚡ SCAN TARGET GMAIL
+    </button>
+
+    <div class="sep" style="margin:18px 0 10px"></div>
+    <div style="font-size:10px; color:#2a3a2a; text-align:center; letter-spacing:2px; line-height:2">
+      ⚠ SIMULATION ONLY · FOR LEARNING PURPOSE ONLY<br/>
+      MASJAWA HACKING TOOLS © 2024
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 3: MAIN TOOLS MENU
+══════════════════════════════════════════════ -->
+<div class="page" id="page-menu" style="padding-top:60px">
+  <div class="panel page-transition">
+    <div class="panel-title">⚡ TOOLS MENU</div>
+    <div class="panel-sub">[ SELECT OPERATION MODE ]</div>
+
+    <div class="target-badge" id="menu-target">
+      <div class="target-dot"></div>
+      TARGET: <span id="menu-target-email">-</span>
+      <span class="badge badge-green" style="margin-left:auto">VERIFIED</span>
+    </div>
+
+    <ul class="menu-list">
+      <li class="menu-item" onclick="goToPage('page-remove')">
+        <div class="num">01</div>
+        <div class="info">
+          <div class="title">🗑 REMOVE DATA SERVER GMAIL</div>
+          <div class="desc">Hapus seluruh data dari server Gmail</div>
+        </div>
+        <div class="arrow">▶</div>
+      </li>
+      <li class="menu-item" onclick="goToPage('page-cek')">
+        <div class="num">02</div>
+        <div class="info">
+          <div class="title">🔍 CEK DATA GMAIL</div>
+          <div class="desc">Lihat foto & APK yang terhubung</div>
+        </div>
+        <div class="arrow">▶</div>
+      </li>
+      <li class="menu-item" onclick="goToPage('page-takeover')">
+        <div class="num">03</div>
+        <div class="info">
+          <div class="title">🎯 AMBIL ALIH GMAIL</div>
+          <div class="desc">Akses kontrol penuh akun Gmail</div>
+        </div>
+        <div class="arrow">▶</div>
+      </li>
+      <li class="menu-item" onclick="goToPage('page-kunci')">
+        <div class="num">04</div>
+        <div class="info">
+          <div class="title">🔒 KUNCI GMAIL</div>
+          <div class="desc">Kunci akses akun Gmail target</div>
+        </div>
+        <div class="arrow">▶</div>
+      </li>
+      <li class="menu-item" onclick="goToPage('page-virus')">
+        <div class="num">05</div>
+        <div class="info">
+          <div class="title">🛡️ PEMBERSIHAN DEVICE DARI VIRUS</div>
+          <div class="desc">Scan & bersihkan virus dari device target</div>
+        </div>
+        <div class="arrow">▶</div>
+      </li>
+    </ul>
+
+    <button class="btn btn-back" onclick="goToPage('page-gmail')">◀ GANTI TARGET</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 4: REMOVE DATA
+══════════════════════════════════════════════ -->
+<div class="page" id="page-remove" style="padding-top:60px">
+  <div class="panel page-transition" style="max-width:600px">
+    <div class="panel-title" style="color:var(--red)">🗑 REMOVE DATA SERVER</div>
+    <div class="panel-sub">[ HAPUS SELURUH DATA GMAIL TARGET ]</div>
+
+    <div class="target-badge">
+      <div class="target-dot" style="background:var(--red); box-shadow:0 0 6px var(--red)"></div>
+      TARGET: <span id="remove-target-email" style="color:var(--red)">-</span>
+    </div>
+
+    <div class="log-box" id="remove-log">
+      <span class="log-line" style="color:#333">> Sistem siap. Tekan tombol untuk memulai proses remove.</span>
+    </div>
+
+    <div id="remove-circle-wrap" class="circle-wrap" style="display:none">
+      <svg class="circle-svg" width="110" height="110" viewBox="0 0 110 110">
+        <circle class="circle-bg" cx="55" cy="55" r="45"/>
+        <circle class="circle-fill" id="remove-circle" cx="55" cy="55" r="45"/>
+      </svg>
+      <div class="circle-text" id="remove-pct-text">0%</div>
+      <div class="circle-label" id="remove-timer-text">ELAPSED: 00:00</div>
+    </div>
+
+    <div id="remove-progress-bar-wrap" class="progress-bar-wrap" style="display:none; width:100%; max-width:100%">
+      <div class="progress-bar-fill" id="remove-progress-fill" style="background:linear-gradient(90deg,#aa0020,var(--red))"></div>
+    </div>
+
+    <button class="btn btn-danger" id="btn-remove" onclick="startRemove()">
+      ⚡ REMOVE DATA GMAIL SEKARANG
+    </button>
+
+    <button class="btn btn-back" id="btn-remove-back" onclick="goToPage('page-menu')">◀ KEMBALI KE MENU</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 5: CEK DATA GMAIL
+══════════════════════════════════════════════ -->
+<div class="page" id="page-cek" style="padding-top:60px">
+  <div class="panel page-transition">
+    <div class="panel-title">🔍 CEK DATA GMAIL</div>
+    <div class="panel-sub">[ DATA & APLIKASI TERHUBUNG ]</div>
+
+    <div class="target-badge">
+      <div class="target-dot"></div>
+      TARGET: <span id="cek-target-email">-</span>
+      <span class="badge badge-green" style="margin-left:auto">LIVE</span>
+    </div>
+
+    <!-- Foto Section -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px; color:#444; letter-spacing:2px; margin-bottom:10px">▸ DATA FOTO AKUN</div>
+      <div class="data-row">
+        <span class="data-key">Total Foto Tersimpan</span>
+        <span class="data-val">1,247 files</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Google Photos</span>
+        <span class="data-val">✓ Terhubung</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Ukuran Backup</span>
+        <span class="data-val yellow">4.2 GB</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Auto Sync</span>
+        <span class="data-val"><span class="badge badge-green">AKTIF</span></span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Foto Privat</span>
+        <span class="data-val red">83 files terdeteksi</span>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- APK Section -->
+    <div>
+      <div style="font-size:11px; color:#444; letter-spacing:2px; margin-bottom:10px">▸ APLIKASI TERHUBUNG</div>
+      <div class="apk-cards">
+        <div class="apk-card connected">
+          <div class="apk-icon">💬</div>
+          <div class="apk-name">WhatsApp</div>
+          <div class="apk-status"><span class="badge badge-green">✓ TERHUBUNG</span></div>
+          <div style="font-size:10px; color:#333; margin-top:6px">Sync: Aktif</div>
+          <div style="font-size:10px; color:#333">Backup: 2.1 GB</div>
+        </div>
+        <div class="apk-card connected">
+          <div class="apk-icon">🎵</div>
+          <div class="apk-name">TikTok</div>
+          <div class="apk-status"><span class="badge badge-green">✓ TERHUBUNG</span></div>
+          <div style="font-size:10px; color:#333; margin-top:6px">Login: Gmail</div>
+          <div style="font-size:10px; color:#333">Status: Online</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px; color:#444; letter-spacing:2px; margin-bottom:10px">▸ INFO AKUN</div>
+      <div class="data-row">
+        <span class="data-key">Last Login</span>
+        <span class="data-val" id="cek-lastlogin">-</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Device</span>
+        <span class="data-val">Android 13</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">IP Terakhir</span>
+        <span class="data-val yellow">114.79.xx.xxx</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">2FA Status</span>
+        <span class="data-val"><span class="badge badge-red">DISABLED</span></span>
+      </div>
+    </div>
+
+    <button class="btn btn-back" onclick="goToPage('page-menu')">◀ KEMBALI KE MENU</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 6: AMBIL ALIH GMAIL
+══════════════════════════════════════════════ -->
+<div class="page" id="page-takeover" style="padding-top:60px">
+  <div class="panel page-transition">
+    <div class="panel-title" style="color:var(--red)">🎯 AMBIL ALIH GMAIL</div>
+    <div class="panel-sub">[ ACCOUNT TAKEOVER MODULE ]</div>
+
+    <div class="target-badge">
+      <div class="target-dot" style="background:var(--red); box-shadow:0 0 6px var(--red)"></div>
+      TARGET: <span id="takeover-target-email" style="color:var(--red)">-</span>
+    </div>
+
+    <div class="server-off-wrap">
+      <div class="server-off-icon">🚫</div>
+      <div class="server-off-title">SERVER OFF</div>
+      <div class="server-off-sub">
+        GMAIL TERKUNCI PERMANEN<br/>
+        MODUL TIDAK DAPAT DIAKSES<br/>
+        <span style="color:#333">────────────────────────</span><br/>
+        KONEKSI KE SERVER GAGAL
+      </div>
+
+      <div class="contact-box">
+        ⚠ AKUN INI TELAH TERKUNCI PERMANEN<br/>
+        ────────────────────────────────────<br/>
+        Untuk informasi lebih lanjut:<br/>
+        📩 Hubungi Pihak Tools<br/>
+        👤 Author: Fendipendol<br/>
+        🔧 MasJawa Hacking Tools
+      </div>
+    </div>
+
+    <button class="btn btn-back" onclick="goToPage('page-menu')">◀ KEMBALI KE MENU</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 7: KUNCI GMAIL
+══════════════════════════════════════════════ -->
+<div class="page" id="page-kunci" style="padding-top:60px">
+  <div class="panel page-transition">
+    <div class="panel-title" style="color:var(--yellow)">🔒 KUNCI GMAIL</div>
+    <div class="panel-sub">[ ACCOUNT LOCK MODULE ]</div>
+
+    <div class="target-badge">
+      <div class="target-dot" style="background:var(--yellow); box-shadow:0 0 6px var(--yellow)"></div>
+      TARGET: <span id="kunci-target-email" style="color:var(--yellow)">-</span>
+    </div>
+
+    <div class="lock-anim" id="lock-icon">🔓</div>
+
+    <div class="log-box" id="kunci-log">
+      <span class="log-line" style="color:#333">> Modul penguncian siap. Tekan tombol untuk memulai.</span>
+    </div>
+
+    <div id="kunci-progress-wrap" style="display:none">
+      <div style="font-size:11px; color:#555; text-align:center; margin-bottom:8px; letter-spacing:2px" id="kunci-stage-text">INISIALISASI...</div>
+      <div class="progress-bar-wrap" style="width:100%; max-width:100%; margin-bottom:0">
+        <div class="progress-bar-fill" id="kunci-progress-fill" style="background:linear-gradient(90deg,#aa8800,var(--yellow))"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-warning" id="btn-kunci" onclick="startKunci()" style="margin-top:15px">
+      🔒 MULAI PENGUNCIAN GMAIL
+    </button>
+
+    <button class="btn btn-back" id="btn-kunci-back" onclick="goToPage('page-menu')">◀ KEMBALI KE MENU</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 8: PEMBERSIHAN DEVICE DARI VIRUS
+══════════════════════════════════════════════ -->
+<div class="page" id="page-virus" style="padding-top:60px">
+  <div class="panel page-transition" style="max-width:620px">
+    <div class="panel-title" style="color:#00e5ff">🛡️ PEMBERSIHAN DEVICE DARI VIRUS</div>
+    <div class="panel-sub">[ DEVICE SCANNER & CLEANER MODULE ]</div>
+
+    <!-- STEP 1: IP Input -->
+    <div id="virus-step-ip">
+      <div style="font-size:11px;color:#444;letter-spacing:2px;margin-bottom:14px">▸ MASUKKAN IP ADDRESS TARGET DEVICE</div>
+      <div class="input-group">
+        <label class="input-label">▸ IP ADDRESS TARGET</label>
+        <input type="text" class="input-field" id="virus-ip-input"
+          placeholder="192.168.x.x"
+          style="border-color:#0a3a4a; color:#00e5ff"
+          oninput="validateIP(this.value)"
+          onkeydown="if(event.key==='Enter') submitIP()"
+        />
+        <div class="input-status" id="virus-ip-status"></div>
+      </div>
+      <button class="btn" id="btn-scan-ip" onclick="submitIP()" disabled
+        style="border-color:#00e5ff; color:#00e5ff">
+        🔍 CONNECT & SCAN DEVICE
+      </button>
+      <button class="btn btn-back" onclick="goToPage('page-menu')" style="margin-top:10px">◀ KEMBALI KE MENU</button>
+    </div>
+
+    <!-- STEP 2: Device Info -->
+    <div id="virus-step-device" style="display:none">
+      <div style="text-align:center; margin-bottom:18px">
+        <div style="font-size:40px; margin-bottom:8px">📱</div>
+        <div style="font-family:'Orbitron',monospace; font-size:15px; color:#00e5ff; letter-spacing:2px; text-shadow:0 0 10px #00e5ff">DEVICE TERDETEKSI</div>
+      </div>
+
+      <!-- Device Spec Box -->
+      <div style="background:#030d0f; border:1px solid #004a5a; border-radius:4px; padding:18px; margin-bottom:18px; position:relative; overflow:hidden">
+        <div style="position:absolute; top:0; left:0; width:100%; height:2px; background:linear-gradient(90deg,transparent,#00e5ff,transparent)"></div>
+        <div style="font-size:10px; color:#005a6a; letter-spacing:3px; margin-bottom:14px">▸ DEVICE SPECIFICATIONS</div>
+
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">Brand / Model</span>
+          <span class="data-val" style="color:#00e5ff">Redmi Note 13 Pro</span>
+        </div>
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">CPU</span>
+          <span class="data-val" style="color:#00e5ff">Helio G99-ULTRA</span>
+        </div>
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">IMEI</span>
+          <span class="data-val" style="color:#00e5ff; font-size:11px">863357061930020</span>
+        </div>
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">IP Address</span>
+          <span class="data-val" id="virus-ip-display" style="color:#00e5ff">-</span>
+        </div>
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">OS</span>
+          <span class="data-val" style="color:#00e5ff">MIUI 14 / Android 13</span>
+        </div>
+        <div class="data-row" style="border-color:#041a1f">
+          <span class="data-key">Status Koneksi</span>
+          <span class="data-val"><span class="badge" style="background:rgba(0,229,255,0.1);border:1px solid #00e5ff;color:#00e5ff">✓ TERHUBUNG</span></span>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-start-scan" onclick="startVirusScan()"
+        style="border-color:#00e5ff; color:#00e5ff">
+        🦠 MULAI SCAN VIRUS
+      </button>
+      <button class="btn btn-back" onclick="resetVirusPage(); goToPage('page-menu')" style="margin-top:10px">◀ KEMBALI KE MENU</button>
+    </div>
+
+    <!-- STEP 3: Scan & Clean -->
+    <div id="virus-step-scan" style="display:none">
+      <div style="text-align:center; margin-bottom:14px">
+        <div style="font-size:36px; margin-bottom:6px" id="virus-scan-icon">🔍</div>
+        <div style="font-family:'Orbitron',monospace; font-size:13px; letter-spacing:2px" id="virus-scan-title" style="color:#00e5ff">SCANNING DEVICE...</div>
+      </div>
+
+      <!-- Scan Progress -->
+      <div id="virus-scan-section">
+        <div style="font-size:10px; color:#005a6a; letter-spacing:2px; margin-bottom:8px">▸ SCAN PROGRESS</div>
+        <div class="progress-bar-wrap" style="width:100%;max-width:100%;margin-bottom:6px">
+          <div class="progress-bar-fill" id="virus-scan-fill" style="background:linear-gradient(90deg,#007a8a,#00e5ff); width:0%"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:#444; margin-bottom:12px">
+          <span id="virus-scan-pct">0%</span>
+          <span id="virus-scan-file">Initializing...</span>
+        </div>
+        <div class="log-box" id="virus-scan-log" style="border-color:#041a1f; max-height:130px"></div>
+      </div>
+
+      <!-- Virus Found -->
+      <div id="virus-found-section" style="display:none">
+        <div style="background:#0a0505; border:1px solid #3a0000; border-radius:3px; padding:14px; margin-bottom:14px">
+          <div style="font-size:11px; color:#ff3333; letter-spacing:2px; margin-bottom:10px">⚠ VIRUS TERDETEKSI!</div>
+          <div class="data-row" style="border-color:#1a0000">
+            <span class="data-key">Trojan.AndroidOS.Hiddad</span>
+            <span class="data-val red">● AKTIF</span>
+          </div>
+          <div class="data-row" style="border-color:#1a0000">
+            <span class="data-key">Spyware.Agent.GenB</span>
+            <span class="data-val red">● AKTIF</span>
+          </div>
+          <div class="data-row" style="border-color:#1a0000">
+            <span class="data-key">Adware.MobiDash</span>
+            <span class="data-val red">● AKTIF</span>
+          </div>
+          <div class="data-row" style="border-color:#1a0000">
+            <span class="data-key">RiskTool.SMSSend</span>
+            <span class="data-val yellow">● SUSPEK</span>
+          </div>
+          <div class="data-row" style="border-color:#1a0000">
+            <span class="data-key">Backdoor.AndroidOS.Marcher</span>
+            <span class="data-val red">● AKTIF</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; background:#030d03; border:1px solid #0a2a0a; padding:10px 14px; border-radius:3px; font-size:11px; margin-bottom:14px">
+          <span style="color:#555">Total Virus</span>
+          <span style="color:var(--red); font-weight:bold">5 ANCAMAN DITEMUKAN</span>
+        </div>
+
+        <button class="btn btn-danger" id="btn-clean-virus" onclick="startVirusClean()">
+          🧹 MULAI PEMBERSIHAN VIRUS
+        </button>
+      </div>
+
+      <!-- Clean Progress -->
+      <div id="virus-clean-section" style="display:none">
+        <div style="font-size:10px; color:#005a6a; letter-spacing:2px; margin-bottom:8px">▸ CLEAN PROGRESS</div>
+        <div class="progress-bar-wrap" style="width:100%;max-width:100%;margin-bottom:6px">
+          <div class="progress-bar-fill" id="virus-clean-fill" style="background:linear-gradient(90deg,#003a00,var(--green)); width:0%"></div>
+        </div>
+        <div style="font-size:10px; color:#444; margin-bottom:10px" id="virus-clean-stage">Mempersiapkan pembersihan...</div>
+        <div class="log-box" id="virus-clean-log" style="border-color:#041a1f; max-height:150px"></div>
+      </div>
+
+      <!-- Done -->
+      <div id="virus-done-section" style="display:none; text-align:center; padding:10px 0">
+        <div style="font-size:48px; margin-bottom:10px">✅</div>
+        <div style="font-family:'Orbitron',monospace; font-size:16px; color:var(--green); text-shadow:0 0 10px var(--green); letter-spacing:2px; margin-bottom:6px">DEVICE BERSIH!</div>
+        <div style="font-size:11px; color:#555; letter-spacing:1px; margin-bottom:16px">Semua ancaman berhasil dihapus dari device</div>
+        <div style="background:#030a03; border:1px solid #0a2a0a; padding:12px; border-radius:3px; font-size:11px; text-align:left; margin-bottom:14px">
+          <div class="data-row" style="border-color:#0a1a0a"><span class="data-key">Virus Ditemukan</span><span class="data-val red">5</span></div>
+          <div class="data-row" style="border-color:#0a1a0a"><span class="data-key">Virus Dibersihkan</span><span class="data-val">5</span></div>
+          <div class="data-row" style="border-color:#0a1a0a"><span class="data-key">Status Device</span><span class="data-val"><span class="badge badge-green">AMAN ✓</span></span></div>
+        </div>
+      </div>
+
+      <button class="btn btn-back" id="btn-virus-back" onclick="resetVirusPage(); goToPage('page-menu')" style="margin-top:10px; display:none">◀ KEMBALI KE MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+// ─── MATRIX RAIN ───────────────────────────────
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01101001ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
+let drops = [];
+function initDrops() {
+  drops = Array(Math.floor(canvas.width / 16)).fill(1);
+}
+initDrops();
+window.addEventListener('resize', initDrops);
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = '14px Share Tech Mono';
+  drops.forEach((y, i) => {
+    const ch = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(ch, i * 16, y * 16);
+    if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  });
+}
+setInterval(drawMatrix, 50);
+
+// ─── BOOT SEQUENCE ─────────────────────────────
+const bootLines = [
+  'Initializing kernel modules...',
+  'Loading network drivers...',
+  'Connecting to secure server...',
+  'Decrypting payload...',
+  'Bypassing firewall rules...',
+  'Loading Gmail exploit modules...',
+  'Checking root access...',
+  'System ready. All modules loaded.'
+];
+
+let bootIdx = 0;
+let typingEl = document.getElementById('typing-text');
+let progressEl = document.getElementById('boot-progress');
+let pctEl = document.getElementById('boot-pct');
+let enterBtn = document.getElementById('btn-enter');
+
+function runBoot() {
+  if (bootIdx >= bootLines.length) {
+    setTimeout(() => {
+      pctEl.textContent = 'SYSTEM READY — 100%';
+      pctEl.style.color = '#00ff41';
+      typingEl.innerHTML = '<span style="color:#00ff41">✓ ALL SYSTEMS OPERATIONAL</span>';
+      enterBtn.style.display = 'inline-block';
+      enterBtn.style.animation = 'fadeInUp 0.5s ease forwards';
+    }, 300);
+    return;
+  }
+  const line = bootLines[bootIdx];
+  const pct = Math.floor(((bootIdx + 1) / bootLines.length) * 100);
+  typingEl.textContent = '> ' + line;
+  progressEl.style.width = pct + '%';
+  pctEl.textContent = 'Loading... ' + pct + '%';
+  bootIdx++;
+  setTimeout(runBoot, 420);
+}
+
+setTimeout(runBoot, 1800);
+
+// ─── PAGE NAVIGATION ──────────────────────────
+let currentGmail = '';
+
+function goToPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+  });
+  const target = document.getElementById(pageId);
+  target.classList.add('active');
+
+  // Show/hide header
+  document.getElementById('header-bar').style.display = pageId === 'page-welcome' ? 'none' : 'flex';
+
+  // Update target emails
+  if (pageId !== 'page-welcome' && pageId !== 'page-gmail') {
+    const fields = ['menu-target-email','remove-target-email','cek-target-email','takeover-target-email','kunci-target-email'];
+    fields.forEach(f => {
+      const el = document.getElementById(f);
+      if (el) el.textContent = currentGmail || '-';
+    });
+  }
+
+  if (pageId === 'page-cek') {
+    document.getElementById('cek-lastlogin').textContent = new Date().toLocaleString('id-ID');
+  }
+
+  // Reset remove page
+  if (pageId === 'page-remove') resetRemove();
+  if (pageId === 'page-kunci') resetKunci();
+
+  // Scroll to top
+  window.scrollTo(0, 0);
+}
+
+// ─── GMAIL VALIDATION ─────────────────────────
+function validateGmail(val) {
+  const btn = document.getElementById('btn-check-gmail');
+  const status = document.getElementById('gmail-status');
+  const isValid = /^[^\s@]+@gmail\.com$/.test(val.trim());
+  if (val.trim() === '') {
+    status.textContent = '';
+    status.className = 'input-status';
+    btn.disabled = true;
+  } else if (isValid) {
+    status.innerHTML = '✓ FORMAT VALID — SIAP UNTUK SCAN';
+    status.className = 'input-status valid';
+    btn.disabled = false;
+  } else {
+    status.innerHTML = '✗ HARUS FORMAT @gmail.com';
+    status.className = 'input-status invalid';
+    btn.disabled = true;
+  }
+}
+
+function checkGmail() {
+  const val = document.getElementById('gmail-input').value.trim();
+  if (!/^[^\s@]+@gmail\.com$/.test(val)) return;
+  currentGmail = val;
+
+  const btn = document.getElementById('btn-check-gmail');
+  btn.disabled = true;
+  btn.textContent = '⚡ SCANNING...';
+
+  // Simulate scan delay
+  let dots = 0;
+  const iv = setInterval(() => {
+    dots = (dots + 1) % 4;
+    btn.textContent = '⚡ SCANNING' + '.'.repeat(dots);
+  }, 300);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    btn.textContent = '✓ TARGET DITEMUKAN';
+    setTimeout(() => {
+      goToPage('page-menu');
+      btn.disabled = false;
+      btn.textContent = '⚡ SCAN TARGET GMAIL';
+    }, 600);
+  }, 2000);
+}
+
+// ─── REMOVE DATA ──────────────────────────────
+let removeInterval = null;
+const REMOVE_DURATION = 180; // 3 minutes in seconds
+
+const removeLogs = [
+  '> Connecting to Gmail API server...',
+  '> Authentication bypass initiated...',
+  '> Session token obtained...',
+  '> Scanning account data structure...',
+  '> Found: 1,247 photos — queued for removal',
+  '> Found: 3,892 emails — queued for removal',
+  '> Found: 412 contacts — queued for removal',
+  '> Found: 87 documents — queued for removal',
+  '> Found: 2 APK connections (WA, TikTok)',
+  '> Disconnecting WhatsApp backup...',
+  '> Disconnecting TikTok session...',
+  '> Initiating deep server wipe...',
+  '> Removing photos from Google Photos...',
+  '> Purging email server cache...',
+  '> Wiping contact database...',
+  '> Removing app permissions...',
+  '> Clearing session tokens...',
+  '> Overwriting backup data...',
+  '> Sending delete commands to CDN...',
+  '> Flushing DNS records...',
+  '> Removing account from index...',
+  '> Finalizing server-side deletion...',
+  '> Verifying data removal...',
+  '> Sending confirmation ping...',
+  '> ✓ ALL DATA SUCCESSFULLY REMOVED'
+];
+
+function resetRemove() {
+  clearInterval(removeInterval);
+  removeInterval = null;
+  const logBox = document.getElementById('remove-log');
+  logBox.innerHTML = '<span class="log-line" style="color:#333">> Sistem siap. Tekan tombol untuk memulai proses remove.</span>';
+  document.getElementById('remove-circle-wrap').style.display = 'none';
+  document.getElementById('remove-progress-bar-wrap').style.display = 'none';
+  document.getElementById('remove-circle').style.strokeDashoffset = 502;
+  document.getElementById('remove-pct-text').textContent = '0%';
+  document.getElementById('remove-timer-text').textContent = 'ELAPSED: 00:00';
+  document.getElementById('remove-progress-fill').style.width = '0%';
+  document.getElementById('btn-remove').disabled = false;
+  document.getElementById('btn-remove').textContent = '⚡ REMOVE DATA GMAIL SEKARANG';
+  document.getElementById('btn-remove-back').disabled = false;
+}
+
+function startRemove() {
+  document.getElementById('btn-remove').disabled = true;
+  document.getElementById('btn-remove').textContent = '🔴 PROSES BERJALAN...';
+  document.getElementById('btn-remove-back').disabled = true;
+  document.getElementById('remove-circle-wrap').style.display = 'flex';
+  document.getElementById('remove-progress-bar-wrap').style.display = 'block';
+
+  const logBox = document.getElementById('remove-log');
+  logBox.innerHTML = '';
+
+  let elapsed = 0;
+  let logIdx = 0;
+  const logInterval = Math.floor(REMOVE_DURATION / removeLogs.length);
+
+  removeInterval = setInterval(() => {
+    elapsed++;
+    const pct = Math.min(Math.floor((elapsed / REMOVE_DURATION) * 100), 100);
+
+    // Update circle
+    const offset = 502 - (502 * pct / 100);
+    document.getElementById('remove-circle').style.strokeDashoffset = offset;
+    document.getElementById('remove-pct-text').textContent = pct + '%';
+
+    // Update progress bar
+    document.getElementById('remove-progress-fill').style.width = pct + '%';
+
+    // Update timer
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('remove-timer-text').textContent = `ELAPSED: ${m}:${s}`;
+
+    // Log messages
+    if (elapsed % Math.floor(REMOVE_DURATION / removeLogs.length) === 0 && logIdx < removeLogs.length) {
+      const span = document.createElement('span');
+      span.className = 'log-line ' + (logIdx === removeLogs.length - 1 ? 'done' : 'active');
+      span.textContent = removeLogs[logIdx];
+      logBox.appendChild(span);
+      logBox.scrollTop = logBox.scrollHeight;
+      logIdx++;
+    }
+
+    // Done
+    if (elapsed >= REMOVE_DURATION) {
+      clearInterval(removeInterval);
+      removeInterval = null;
+      const doneSpan = document.createElement('span');
+      doneSpan.className = 'log-line done';
+      doneSpan.textContent = '> ════ PROSES REMOVE SELESAI 100% ════';
+      logBox.appendChild(doneSpan);
+      logBox.scrollTop = logBox.scrollHeight;
+      document.getElementById('btn-remove').textContent = '✓ SELESAI';
+      document.getElementById('btn-remove-back').disabled = false;
+    }
+  }, 1000);
+}
+
+// ─── VIRUS CLEANER ────────────────────────────
+function validateIP(val) {
+  const btn = document.getElementById('btn-scan-ip');
+  const status = document.getElementById('virus-ip-status');
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (val.trim() === '') {
+    status.textContent = '';
+    status.className = 'input-status';
+    btn.disabled = true;
+  } else if (ipRegex.test(val.trim())) {
+    const parts = val.trim().split('.');
+    const valid = parts.every(p => parseInt(p) >= 0 && parseInt(p) <= 255);
+    if (valid) {
+      status.innerHTML = '✓ IP VALID — SIAP CONNECT';
+      status.className = 'input-status valid';
+      status.style.color = '#00e5ff';
+      btn.disabled = false;
+    } else {
+      status.innerHTML = '✗ IP TIDAK VALID';
+      status.className = 'input-status invalid';
+      btn.disabled = true;
+    }
+  } else {
+    status.innerHTML = '✗ FORMAT SALAH — CONTOH: 192.168.1.1';
+    status.className = 'input-status invalid';
+    btn.disabled = true;
+  }
+}
+
+function submitIP() {
+  const val = document.getElementById('virus-ip-input').value.trim();
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(val)) return;
+
+  const btn = document.getElementById('btn-scan-ip');
+  btn.disabled = true;
+  btn.textContent = '🔍 CONNECTING...';
+
+  let dots = 0;
+  const iv = setInterval(() => {
+    dots = (dots + 1) % 4;
+    btn.textContent = '🔍 CONNECTING' + '.'.repeat(dots);
+  }, 300);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    btn.textContent = '✓ DEVICE DITEMUKAN!';
+    document.getElementById('virus-ip-display').textContent = val;
+    setTimeout(() => {
+      document.getElementById('virus-step-ip').style.display = 'none';
+      document.getElementById('virus-step-device').style.display = 'block';
+    }, 600);
+  }, 2200);
+}
+
+const virusScanFiles = [
+  '/system/app/SystemUI.apk',
+  '/data/app/com.android.vending',
+  '/sdcard/DCIM/Camera/',
+  '/data/data/com.whatsapp/',
+  '/system/lib/libdvm.so',
+  '/data/app/com.tiktok.android/',
+  '/sdcard/Android/data/',
+  '/data/data/com.google.android.gms/',
+  '/system/framework/framework.jar',
+  '/data/app/com.xiaomi.mipush/',
+  '/sdcard/Download/',
+  '/data/data/com.android.chrome/',
+  '/system/bin/init',
+  '/data/app/com.facebook.katana/',
+  '/sdcard/WhatsApp/Media/',
+];
+
+const virusScanLogs = [
+  '> Menghubungkan ke device via IP...',
+  '> Akses root diperoleh...',
+  '> Memulai deep scan sistem...',
+  '> Scanning /system/app/ ...',
+  '> Scanning /data/app/ ...',
+  '> Scanning /sdcard/ ...',
+  '> Scanning memory aktif...',
+  '> Menganalisis proses berjalan...',
+  '> Memeriksa file tersembunyi...',
+  '> Memeriksa registri sistem...',
+  '> Menganalisis network traffic...',
+  '> Memeriksa startup apps...',
+  '> Scanning selesai.',
+  '⚠ ANCAMAN DITEMUKAN!',
+];
+
+function startVirusScan() {
+  document.getElementById('virus-step-device').style.display = 'none';
+  document.getElementById('virus-step-scan').style.display = 'block';
+
+  const logBox = document.getElementById('virus-scan-log');
+  const fill = document.getElementById('virus-scan-fill');
+  const pctEl = document.getElementById('virus-scan-pct');
+  const fileEl = document.getElementById('virus-scan-file');
+  logBox.innerHTML = '';
+
+  let pct = 0;
+  let logIdx = 0;
+  let fileIdx = 0;
+
+  const iv = setInterval(() => {
+    pct += 2;
+    fill.style.width = Math.min(pct, 100) + '%';
+    pctEl.textContent = Math.min(pct, 100) + '%';
+
+    // Cycle through files
+    fileEl.textContent = virusScanFiles[fileIdx % virusScanFiles.length];
+    fileIdx++;
+
+    // Add log every ~15%
+    if (pct % 14 === 0 && logIdx < virusScanLogs.length) {
+      const span = document.createElement('span');
+      span.className = 'log-line ' + (logIdx === virusScanLogs.length - 1 ? 'error' : 'active');
+      span.textContent = virusScanLogs[logIdx];
+      logBox.appendChild(span);
+      logBox.scrollTop = logBox.scrollHeight;
+      logIdx++;
+    }
+
+    if (pct >= 100) {
+      clearInterval(iv);
+      fill.style.width = '100%';
+      pctEl.textContent = '100%';
+      fileEl.textContent = 'Scan selesai.';
+
+      // Add remaining logs
+      while (logIdx < virusScanLogs.length) {
+        const span = document.createElement('span');
+        span.className = 'log-line ' + (logIdx === virusScanLogs.length - 1 ? 'error' : 'done');
+        span.textContent = virusScanLogs[logIdx];
+        logBox.appendChild(span);
+        logIdx++;
+      }
+      logBox.scrollTop = logBox.scrollHeight;
+
+      setTimeout(() => {
+        document.getElementById('virus-scan-title').textContent = '⚠ VIRUS TERDETEKSI!';
+        document.getElementById('virus-scan-title').style.color = '#ff3333';
+        document.getElementById('virus-scan-icon').textContent = '🦠';
+        document.getElementById('virus-found-section').style.display = 'block';
+      }, 600);
+    }
+  }, 80);
+}
+
+const virusCleanLogs = [
+  '> Mengisolasi Trojan.AndroidOS.Hiddad...',
+  '> Menghapus file Trojan dari /data/app/ ...',
+  '> Trojan.AndroidOS.Hiddad → DIHAPUS ✓',
+  '> Mengisolasi Spyware.Agent.GenB...',
+  '> Memutus koneksi spyware ke server remote...',
+  '> Spyware.Agent.GenB → DIHAPUS ✓',
+  '> Mengisolasi Adware.MobiDash...',
+  '> Membersihkan cache adware...',
+  '> Adware.MobiDash → DIHAPUS ✓',
+  '> Mengisolasi RiskTool.SMSSend...',
+  '> RiskTool.SMSSend → DIHAPUS ✓',
+  '> Mengisolasi Backdoor.AndroidOS.Marcher...',
+  '> Memblokir backdoor port...',
+  '> Backdoor.AndroidOS.Marcher → DIHAPUS ✓',
+  '> Membersihkan sisa file virus...',
+  '> Memperbarui signature database...',
+  '> Melakukan restart layanan sistem...',
+  '> ✓ DEVICE BERSIH — SEMUA ANCAMAN DIHAPUS',
+];
+
+const virusCleanStages = [
+  { txt: 'MENGISOLASI TROJAN...', pct: 10 },
+  { txt: 'MENGHAPUS SPYWARE...', pct: 25 },
+  { txt: 'MEMBERSIHKAN ADWARE...', pct: 40 },
+  { txt: 'MENGHAPUS RISKTOOL...', pct: 55 },
+  { txt: 'MENGHAPUS BACKDOOR...', pct: 70 },
+  { txt: 'MEMBERSIHKAN SISA FILE...', pct: 82 },
+  { txt: 'MEMPERBARUI DATABASE...', pct: 92 },
+  { txt: '✓ PEMBERSIHAN SELESAI!', pct: 100 },
+];
+
+function startVirusClean() {
+  document.getElementById('btn-clean-virus').disabled = true;
+  document.getElementById('btn-clean-virus').textContent = '🧹 MEMBERSIHKAN...';
+  document.getElementById('virus-clean-section').style.display = 'block';
+
+  const logBox = document.getElementById('virus-clean-log');
+  const fill = document.getElementById('virus-clean-fill');
+  const stageEl = document.getElementById('virus-clean-stage');
+  logBox.innerHTML = '';
+
+  let stageIdx = 0;
+  let logIdx = 0;
+
+  const iv = setInterval(() => {
+    if (stageIdx >= virusCleanStages.length) {
+      clearInterval(iv);
+      // Show remaining logs
+      while (logIdx < virusCleanLogs.length) {
+        const span = document.createElement('span');
+        span.className = 'log-line done';
+        span.textContent = virusCleanLogs[logIdx];
+        logBox.appendChild(span);
+        logIdx++;
+      }
+      logBox.scrollTop = logBox.scrollHeight;
+
+      setTimeout(() => {
+        document.getElementById('virus-scan-icon').textContent = '✅';
+        document.getElementById('virus-scan-title').textContent = 'DEVICE BERSIH!';
+        document.getElementById('virus-scan-title').style.color = '#00ff41';
+        document.getElementById('virus-found-section').style.display = 'none';
+        document.getElementById('virus-clean-section').style.display = 'none';
+        document.getElementById('virus-done-section').style.display = 'block';
+        document.getElementById('btn-virus-back').style.display = 'block';
+      }, 800);
+      return;
+    }
+
+    const stage = virusCleanStages[stageIdx];
+    fill.style.width = stage.pct + '%';
+    stageEl.textContent = stage.txt;
+    stageEl.style.color = stage.pct === 100 ? '#00ff41' : '#00e5ff';
+
+    // Add 2 logs per stage
+    for (let i = 0; i < 2 && logIdx < virusCleanLogs.length; i++) {
+      const span = document.createElement('span');
+      span.className = 'log-line ' + (virusCleanLogs[logIdx].includes('✓') ? 'done' : 'active');
+      span.textContent = virusCleanLogs[logIdx];
+      logBox.appendChild(span);
+      logBox.scrollTop = logBox.scrollHeight;
+      logIdx++;
+    }
+
+    stageIdx++;
+  }, 900);
+}
+
+function resetVirusPage() {
+  // Reset all steps
+  document.getElementById('virus-step-ip').style.display = 'block';
+  document.getElementById('virus-step-device').style.display = 'none';
+  document.getElementById('virus-step-scan').style.display = 'none';
+  document.getElementById('virus-found-section').style.display = 'none';
+  document.getElementById('virus-clean-section').style.display = 'none';
+  document.getElementById('virus-done-section').style.display = 'none';
+  document.getElementById('btn-virus-back').style.display = 'none';
+
+  // Reset inputs
+  document.getElementById('virus-ip-input').value = '';
+  document.getElementById('virus-ip-status').textContent = '';
+  document.getElementById('btn-scan-ip').disabled = true;
+  document.getElementById('btn-scan-ip').textContent = '🔍 CONNECT & SCAN DEVICE';
+
+  // Reset scan
+  document.getElementById('virus-scan-fill').style.width = '0%';
+  document.getElementById('virus-scan-pct').textContent = '0%';
+  document.getElementById('virus-scan-file').textContent = 'Initializing...';
+  document.getElementById('virus-scan-log').innerHTML = '';
+  document.getElementById('virus-scan-title').textContent = 'SCANNING DEVICE...';
+  document.getElementById('virus-scan-title').style.color = '#00e5ff';
+  document.getElementById('virus-scan-icon').textContent = '🔍';
+
+  // Reset clean
+  document.getElementById('virus-clean-fill').style.width = '0%';
+  document.getElementById('virus-clean-stage').textContent = 'Mempersiapkan pembersihan...';
+  document.getElementById('virus-clean-log').innerHTML = '';
+  document.getElementById('btn-clean-virus').disabled = false;
+  document.getElementById('btn-clean-virus').textContent = '🧹 MULAI PEMBERSIHAN VIRUS';
+}
+
+// ─── KUNCI GMAIL ──────────────────────────────
+const kunciStages = [
+  { txt: 'MENGHUBUNGKAN KE SERVER...', pct: 5 },
+  { txt: 'AUTENTIKASI BYPASS...', pct: 12 },
+  { txt: 'MENGAKSES PANEL KEAMANAN...', pct: 20 },
+  { txt: 'MENONAKTIFKAN 2FA...', pct: 30 },
+  { txt: 'MENGUNCI SESI AKTIF...', pct: 42 },
+  { txt: 'MEMBLOKIR AKSES RECOVERY...', pct: 55 },
+  { txt: 'ENKRIPSI PASSWORD BARU...', pct: 68 },
+  { txt: 'MENGUNCI BACKUP CODES...', pct: 78 },
+  { txt: 'SINKRONISASI DATABASE...', pct: 88 },
+  { txt: 'FINALISASI PENGUNCIAN...', pct: 95 },
+  { txt: '🔒 GMAIL BERHASIL DIKUNCI!', pct: 100 },
+];
+
+const kunciLogLines = [
+  '> Menginisialisasi modul kunci...',
+  '> Bypass Google Security Layer...',
+  '> Mendapatkan akses token...',
+  '> Mengubah kredensial...',
+  '> Memblokir sesi pengguna...',
+  '> Mengaktifkan lock permanen...',
+  '> Konfirmasi kunci ke server...',
+  '> Penguncian selesai.',
+];
+
+function resetKunci() {
+  document.getElementById('lock-icon').textContent = '🔓';
+  document.getElementById('lock-icon').className = 'lock-anim';
+  document.getElementById('kunci-log').innerHTML = '<span class="log-line" style="color:#333">> Modul penguncian siap. Tekan tombol untuk memulai.</span>';
+  document.getElementById('kunci-progress-wrap').style.display = 'none';
+  document.getElementById('kunci-progress-fill').style.width = '0%';
+  document.getElementById('kunci-stage-text').textContent = 'INISIALISASI...';
+  document.getElementById('btn-kunci').disabled = false;
+  document.getElementById('btn-kunci').textContent = '🔒 MULAI PENGUNCIAN GMAIL';
+  document.getElementById('btn-kunci-back').disabled = false;
+}
+
+function startKunci() {
+  document.getElementById('btn-kunci').disabled = true;
+  document.getElementById('btn-kunci').textContent = '⏳ DALAM PROSES MOHON TUNGGU...';
+  document.getElementById('btn-kunci-back').disabled = true;
+  document.getElementById('kunci-progress-wrap').style.display = 'block';
+
+  const lockIcon = document.getElementById('lock-icon');
+  lockIcon.classList.add('locking');
+  lockIcon.textContent = '🔓';
+
+  const logBox = document.getElementById('kunci-log');
+  logBox.innerHTML = '';
+
+  let stageIdx = 0;
+  const iv = setInterval(() => {
+    if (stageIdx >= kunciStages.length) {
+      clearInterval(iv);
+      lockIcon.textContent = '🔒';
+      lockIcon.classList.remove('locking');
+      document.getElementById('btn-kunci').textContent = '✓ GMAIL TERKUNCI';
+      document.getElementById('btn-kunci-back').disabled = false;
+      return;
+    }
+
+    const stage = kunciStages[stageIdx];
+    document.getElementById('kunci-stage-text').textContent = stage.txt;
+    document.getElementById('kunci-progress-fill').style.width = stage.pct + '%';
+
+    if (kunciLogLines[stageIdx]) {
+      const span = document.createElement('span');
+      span.className = 'log-line active';
+      span.textContent = kunciLogLines[stageIdx];
+      logBox.appendChild(span);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    stageIdx++;
+  }, 800);
+}
+</script>
+</body>
+</html>
